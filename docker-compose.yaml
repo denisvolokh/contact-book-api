@@ -1,0 +1,75 @@
+version: '3'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: postgresql://user:password@database:5432/dbname
+    volumes:
+      - ./api:/api
+    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+  
+  imports:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: postgresql://user:password@database:5432/dbname
+    env_file:
+      - .env
+    volumes:
+      - ./api:/api
+    command: python3 load.py
+    # command: top
+
+  # tasks:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - database
+  #     - redis
+  #   environment:
+  #     DATABASE_URL: postgresql://user:password@database:5432/dbname
+  #   volumes:
+  #     - ./api:/api
+  #   command: celery -A tasks.celery worker --loglevel=info
+  #   # command: top
+
+  # mkdocs:
+  #   image: squidfunk/mkdocs-material:latest
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./docs:/docs
+  #   command: serve --dev-addr=0.0.0.0:8000 --livereload
+
+  database:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data/
+      - ./pg_backups:/pg_backups
+
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  pg_data: {}
+  pg_backups: {}

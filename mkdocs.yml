@@ -1,0 +1,12 @@
+site_name: Contact Book API
+repo_url: https://github.com/denisvolokh/contact-book-api
+site_author: Denis Volokh
+
+nav:
+  - Docs: index.md
+  - Getting Started: getting_started.md
+  - Math: math.md
+  - Code: code.md
+  - Terminal: terminal.md
+  - CI/CD: ci_cd.md
+  - Code Reference: reference/
