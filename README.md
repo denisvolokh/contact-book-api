@@ -1,30 +1,45 @@
-# Deploy project with Dokcer and DOcker Compose
+# Setup Local Environment
 
-## Build image
+1. Install poetry with pip
 
-```bash
-
-docker build -t contact-book:latest .
+```shell
+pip install poetry
 ```
 
-## Update Docker Compose with your image
+2. Activate virtual environment
 
-```bash
+```shell
+poetry shell
+```
+
+3. Install dependencies
+
+Make sure you are in the root folder
+
+```shell
+poetry install
+```
+
+4. Create and configure .env file
+
+Create `.env` file using `.env.example` as a template and specify values for all secret keys in the file
+
+5. Run containers
+
+```shell
 docker-compose up -d
 ```
 
-За допомогою цього тестового завдання, ми хочемо зрозуміти, як ви вмієте працювати з вимогами, розбиратись з новими технологіями, інтегрувати ці технології у своєму сервісі. Потрібно створити сервіс з базою контактів, який дозволятиме здійснювати пошук по ним.
+6. Install pre-commits hooks (optional)
 
-1. Створіть PostgreSQL базу даних. Імпортуйте до своєї бази дані з CSV файлу Nimble Contacts (його треба скачати у форматі .csv).
+```shell
+pre-commit install
+```
 
-2. Реалізуйте логіку, що буде періодично (наприклад раз на добу) оновлювати контакти у вашій базі з зовнішнього джерела (для цього можете використовувати cron, celery чи будь-яку іншу відому вам технологію). Джерелом даних буде наш продукт - Nimble. Для отримання контактів використовуйте метод:
+# Swagger
 
-GET https://api.nimble.com/api/v1/contacts
+[API Swagger](http://localhost:5000/swagger)
 
-Документацію по ендпоінту - https://nimble.readthedocs.io/en/latest/contacts/basic/list/. 
-Вам будуть потрібні лише поля first name/last name/email/description. Email та description в Nimble - це multiple поля, але для простоти, можете брати лише перше значення. Для автентифікації використовуйте Authorization хедер і токен ("Authorization: Bearer YOUR_API_KEY").
-Token  NxkA2RlXS3NiR8SKwRdDmroA992jgu
+# Docs
 
-3. Реалізуйте API з одним методом, що приймає текстову стрічку, за якою відбуватиметься fulltext пошук (https://www.postgresql.org/docs/current/textsearch.html) серед контактів у вашій базі. Бажано не використовувати ORM. У відповідь ваш сервіс повинен повертати список знайдених контактів.
-
-Також приємно було б бачити тести й документацію. Результат треба оформити у вигляді github репозиторію.
+[Project Documentation](http://localhost:8000/)
