@@ -38,7 +38,7 @@ def task_update_contacts() -> None:
                     elif local_contact.email:
                         query = {"email": {"is": local_contact.email}}
                         future_contacts[
-                            executor.submit(nimbus_client.list_contacts, query)
+                            executor.submit(nimbus_client.list_contacts, query=query)
                         ] = local_contact
                     else:
                         print(
@@ -51,22 +51,25 @@ def task_update_contacts() -> None:
 
                     if data and len(data.resources) > 0:
                         remote_contact = data.resources[0]
-                        local_contact.nimbus_id = remote_contact["id"]
+                        local_contact.nimbus_id = remote_contact.id
 
-                        if "first name" in remote_contact.fields and len(
-                            remote_contact.fields["first name"] > 0
+                        if (
+                            "first name" in remote_contact.fields
+                            and len(remote_contact.fields["first name"]) > 0
                         ):
                             local_contact.first_name = remote_contact.fields[
                                 "first name"
                             ][0]
-                        if "last name" in remote_contact.fields and len(
-                            remote_contact.fields["last name"] > 0
+                        if (
+                            "last name" in remote_contact.fields
+                            and len(remote_contact.fields["last name"]) > 0
                         ):
                             local_contact.last_name = remote_contact.fields[
                                 "last name"
                             ][0]
-                        if "email" in remote_contact.fields and len(
-                            remote_contact.fields["email"] > 0
+                        if (
+                            "email" in remote_contact.fields
+                            and len(remote_contact.fields["email"]) > 0
                         ):
                             local_contact.email = remote_contact.fields["email"][0]
 
@@ -75,6 +78,6 @@ def task_update_contacts() -> None:
 celery.conf.beat_schedule = {
     "update-contacts": {
         "task": "tasks.task_update_contacts",
-        "schedule": crontab(minute="*"),
+        "schedule": crontab(hour="0"),
     },
 }

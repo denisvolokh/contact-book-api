@@ -1,7 +1,8 @@
 import logging
+from typing import List
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from utils import crud, models
+from utils import crud, models, schema
 from utils.database import SessionLocal, engine
 
 logging.basicConfig(level=logging.INFO)
@@ -38,19 +39,21 @@ def db_session() -> SessionLocal:
 
 
 @app.on_event("startup")
-async def startup() -> None:
+async def startup():  # type: ignore
     from tasks import task_update_contacts
 
     task_update_contacts.apply_async(countdown=60)
 
 
 @app.on_event("shutdown")
-async def shutdown():
+async def shutdown():  # type: ignore
     logger.info("Shutting down...")
 
 
-@v1_router.get("/search")
-async def search_v1(db=Depends(db_session)):
+@v1_router.get("/search", response_model=List[schema.Contact])
+async def search_v1(text: str, db=Depends(db_session)):  # type: ignore
+    """Endpoint to synchronously search contacts"""
+
     object_in_db = crud.get_contact(db, email="mystylenameg@gmail.com")
 
     if not object_in_db:
@@ -60,7 +63,7 @@ async def search_v1(db=Depends(db_session)):
 
 
 @v2_router.get("/search")
-async def search_v2():
+async def search_v2():  # type: ignore
     return "V2"
 
 

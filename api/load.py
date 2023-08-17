@@ -85,15 +85,15 @@ def enrich_contact(contact: Contact, session: requests.Session) -> Contact:
 def import_initial_data() -> None:
     """Perform initial data import from CSV file to database"""
     with SessionLocal() as db_session:
-        # if not table_exists(Contact.__table__, db_session):
-        #     print("Tables does not exist, skipping data insertion.")
-        #     return
+        if not table_exists(Contact.__table__, db_session):
+            print("Tables does not exist, skipping data insertion.")
+            return
 
-        # if table_has_records(Contact, db_session):
-        #     print("Tables already has records, skipping data insertion.")
-        #     return
+        if table_has_records(Contact, db_session):
+            print("Tables already has records, skipping data insertion.")
+            return
 
-        # print("Loading initial data...")
+        print("Loading initial data...")
 
         contacts_data = load_csv_data("data/contacts.csv")
 

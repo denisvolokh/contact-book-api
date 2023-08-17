@@ -30,27 +30,32 @@ services:
     command: python3 load.py
     # command: top
 
-  # tasks:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - database
-  #     - redis
-  #   environment:
-  #     DATABASE_URL: postgresql://user:password@database:5432/dbname
-  #   volumes:
-  #     - ./api:/api
-  #   command: celery -A tasks.celery worker --loglevel=info
-  #   # command: top
+  tasks:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+      - redis
+    environment:
+      DATABASE_URL: postgresql://user:password@database:5432/dbname
+    env_file:
+      - .env
+    volumes:
+      - ./api:/api
+    command: celery -A tasks.celery worker --loglevel=info
 
-  # mkdocs:
-  #   image: squidfunk/mkdocs-material:latest
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - ./docs:/docs
-  #   command: serve --dev-addr=0.0.0.0:8000 --livereload
+  mkdocs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    working_dir: /
+    volumes:
+      - ./docs:/docs
+      - ./mkdocs.yml:/mkdocs.yml
+    command: mkdocs serve --dev-addr=0.0.0.0:8000 --livereload
 
   database:
     image: postgres:latest
