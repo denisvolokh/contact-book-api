@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from utils import crud, models, schema
+from utils import models, schema, search
 from utils.database import SessionLocal, engine
 
 logging.basicConfig(level=logging.INFO)
@@ -54,12 +54,12 @@ async def shutdown():  # type: ignore
 async def search_v1(text: str, db=Depends(db_session)):  # type: ignore
     """Endpoint to synchronously search contacts"""
 
-    object_in_db = crud.get_contact(db, email="mystylenameg@gmail.com")
+    results = search.full_text_seach(session=db, text=text)
 
-    if not object_in_db:
+    if not results:
         raise HTTPException(404, detail={"error": "Contact not found"})
 
-    return object_in_db
+    return [dict(row) for row in results]
 
 
 @v2_router.get("/search")

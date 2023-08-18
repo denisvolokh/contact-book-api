@@ -101,7 +101,15 @@ def import_initial_data() -> None:
             with ThreadPoolExecutor(max_workers=10) as executor:
                 futures = []
                 for contact_data in contacts_data:
-                    contact = Contact(**contact_data)
+                    print(f"Loading contact data: {contact_data}")
+                    # contact = Contact(**contact_data)
+
+                    contact = Contact()
+                    contact.first_name = contact_data["first_name"]
+                    contact.last_name = contact_data["last_name"]
+                    contact.email = contact_data["email"]
+                    contact.description = contact_data["description"]
+
                     futures.append(executor.submit(enrich_contact, contact, session))
 
                 for future in concurrent.futures.as_completed(futures):
