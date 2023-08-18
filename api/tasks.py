@@ -20,7 +20,7 @@ def task_full_text_search(self: Task, text: str) -> Optional[List[models.Contact
     """Task method to execute full text search query
 
     Args:
-        self: Celery task object
+        self (Task): Celery task object
         text (str): Search text
 
     Returns:
