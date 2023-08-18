@@ -12,8 +12,8 @@ services:
     environment:
       DATABASE_URL: postgresql://user:password@database:5432/dbname
     volumes:
-      - ./api:/api
-    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+      - ./api:/code/api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 5000 --reload
   
   imports:
     build:
@@ -26,8 +26,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ./api:/api
-    command: python3 load.py
+      - ./api:/code/api
+    command: python3 /code/api/load.py
     # command: top
 
   tasks:
@@ -42,20 +42,20 @@ services:
     env_file:
       - .env
     volumes:
-      - ./api:/api
-    command: celery -A tasks.celery worker --loglevel=info
+      - ./api:/code/api
+    command: celery -A api.tasks.celery worker --loglevel=info
 
-  mkdocs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    working_dir: /
-    volumes:
-      - ./docs:/docs
-      - ./mkdocs.yml:/mkdocs.yml
-    command: mkdocs serve --dev-addr=0.0.0.0:8000 --livereload
+  # mkdocs:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   working_dir: /
+  #   volumes:
+  #     - ./docs:/docs
+  #     - ./mkdocs.yml:/mkdocs.yml
+  #   command: mkdocs serve --dev-addr=0.0.0.0:8000 --livereload
 
   database:
     image: postgres:latest

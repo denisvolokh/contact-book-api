@@ -4,12 +4,8 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
 import requests
-from dotenv import load_dotenv
 from pydantic import BaseModel
 from requests.adapters import HTTPAdapter, Retry
-
-load_dotenv()
-
 
 MAX_RETRIES = 3
 TIMEOUT_SECONDS = 15

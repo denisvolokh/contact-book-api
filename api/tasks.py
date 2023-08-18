@@ -4,13 +4,14 @@ from typing import List, Optional
 import requests
 from celery import Celery, Task
 from celery.schedules import crontab
-from utils import crud, models, nimbus, search
-from utils.database import SessionLocal
+
+from api.utils import crud, models, nimbus, search
+from api.utils.database import SessionLocal
 
 app_name = "contacts-tasks-app"
 broker_url = "redis://redis:6379/0"
 result_backend = "redis://redis:6379/0"
-include = ["tasks"]
+include = ["api.tasks"]
 
 celery = Celery(app_name, broker=broker_url, backend=result_backend, include=include)
 
@@ -33,7 +34,7 @@ def task_full_text_search(self: Task, text: str) -> Optional[List[models.Contact
     if not results:
         return None
 
-    return [dict(row) for row in results]
+    return [dict(row) for row in results]  # type: ignore
 
 
 @celery.task
@@ -68,7 +69,9 @@ def task_update_contacts() -> None:
 
                 for future_contact in futures.as_completed(future_contacts):
                     local_contact = future_contacts[future_contact]
-                    data: nimbus.NimbusContactsResponse = future_contact.result()
+                    data: Optional[
+                        nimbus.NimbusContactsResponse
+                    ] = future_contact.result()
 
                     if data and len(data.resources) > 0:
                         remote_contact = data.resources[0]

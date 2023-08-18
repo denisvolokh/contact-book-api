@@ -14,14 +14,18 @@ RUN apk update && apk add python3-dev \
 RUN pip install poetry==1.5.1
 
 # install dependencies
-WORKDIR /api
+WORKDIR /code
 
-COPY pyproject.toml poetry.lock /api/
+# # Set the PYTHONPATH
+# ENV PYTHONPATH /
+
+COPY ./pyproject.toml /code/pyproject.toml
+COPY ./poetry.lock /code/poetry.lock
 
 RUN poetry config virtualenvs.create false && poetry install --no-root
 
 # Copy the rest of the application
-COPY /api .
+COPY ./api /code/api
 
 # Command to run the application using FastAPI's Uvicorn
 # CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]

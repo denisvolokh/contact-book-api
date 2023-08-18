@@ -21,7 +21,7 @@ class Contact(Base):
     )
 
 
-def update_search_vector(mapper, connection, target):
+def update_search_vector(mapper, connection, target):  # type: ignore
     values = [target.first_name, target.last_name, target.email, target.description]
     filtered_values = [item for item in values if item]
     target.search_vector = func.to_tsvector("english", " ".join(filtered_values))

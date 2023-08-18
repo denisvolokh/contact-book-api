@@ -71,7 +71,7 @@ The pre-calculation of the search vector is configured using ORM event listener.
 
 
 
-## 2. Import CSV data into database
+## 3. Import CSV data into database
 
 The data import script, `api/load.py`, has been crafted and encapsulated within a separate, short-lived Docker Compose service. This script ensures that the table is both created and empty before loading the data. After its execution, it reports the status of the work to the logs and then exits.
 
@@ -98,7 +98,7 @@ services:
 ...
 ```
 
-## 3. Periodic Updates
+## 4. Periodic Updates
 
 Periodic updates of the database with external data have been implemented using the Celery library. The service allows the creation of tasks that can be executed in the background and scheduled as well. 
 
@@ -141,3 +141,22 @@ services:
 ...  
 ```
 
+## 5. Full-text Search API
+
+### Syncronous Search
+
+The `api/v1/search` endpoint allow to perform a full-text search in synchronous mode. The endpoint accepts a `text` query parameter and returns a list of matching contacts.
+
+### Asynchronous Search
+
+The `api/v2/search` endpoint allow to perform a full-text search in asynchronous mode. The endpoint accepts a `text` query parameter and returns a task id. The task id can be used to retrieve the search results.
+
+The `api/v2/search/status/{task_id}` endpoint can be used to retrieve the search results.
+
+## 6. Testing
+
+The `api/tests` directory contains unit tests for the API endpoints. The tests can be executed using the following command:
+
+```bash
+docker-compose run --rm api pytest
+```
