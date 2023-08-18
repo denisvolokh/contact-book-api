@@ -1,10 +1,10 @@
 from concurrent import futures
-from typing import List
+from typing import List, Optional
 
 import requests
-from celery import Celery
+from celery import Celery, Task
 from celery.schedules import crontab
-from utils import crud, models, nimbus
+from utils import crud, models, nimbus, search
 from utils.database import SessionLocal
 
 app_name = "contacts-tasks-app"
@@ -13,6 +13,27 @@ result_backend = "redis://redis:6379/0"
 include = ["tasks"]
 
 celery = Celery(app_name, broker=broker_url, backend=result_backend, include=include)
+
+
+@celery.task(bind=True)
+def task_full_text_search(self: Task, text: str) -> Optional[List[models.Contact]]:
+    """Task method to execute full text search query
+
+    Args:
+        self: Celery task object
+        text (str): Search text
+
+    Returns:
+        Optional[List[models.Contact]]: List of contacts found
+    """
+
+    with SessionLocal() as db_session:
+        results = search.full_text_search(session=db_session, text=text)
+
+    if not results:
+        return None
+
+    return [dict(row) for row in results]
 
 
 @celery.task

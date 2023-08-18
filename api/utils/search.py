@@ -5,7 +5,7 @@ from sqlalchemy import func
 from . import database, models
 
 
-def full_text_seach(session: database.SessionLocal, text: str) -> List[models.Contact]:
+def full_text_search(session: database.SessionLocal, text: str) -> List[models.Contact]:
     """Execute full text search query
 
     Args:
