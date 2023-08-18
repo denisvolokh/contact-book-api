@@ -19,15 +19,15 @@
         - URL: `https://api.nimble.com/api/v1/contacts`
         - Authentication: Use the Authorization header with your API key
         - Header Example: `Authorization: Bearer YOUR_API_KEY`
-    - Documentation Reference: https://nimble.readthedocs.io/en/latest/contacts/basic/list/
+    - [Documentation Reference](https://nimble.readthedocs.io/en/latest/contacts/basic/list/)
 
-## 3. API Implementation
+## 3. Search API
 
 - Objective: Implement an API endpoint that supports full-text search
 - Tasks:
     - The API should have a single method that accepts a text string as input
     - Using the given text string, perform a full-text search on the contacts in your database
-    - For this, refer to the PostgreSQL documentation on text search: https://www.postgresql.org/docs/current/textsearch.html
+    - For this, refer to the PostgreSQL documentation on [text search](https://www.postgresql.org/docs/current/textsearch.html)
     - It's preferable not to use an ORM for this task
     - The API should return a list of matching contacts
 

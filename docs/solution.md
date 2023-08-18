@@ -31,6 +31,46 @@ volumes:
   pg_backups: {}
 ```
 
+
+## 2. Database Model
+
+```python
+
+class Contact(Base):
+    __tablename__ = "Contact"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nimbus_id = Column(String)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String)
+    description = Column(String)
+    search_vector = Column(TSVECTOR)
+
+    __table_args__ = (
+        Index('idx_search_vector', search_vector, postgresql_using='gin'),
+    )
+
+```
+
+The `Contact` model is designed to store all data from the imported CSV file. Additionally, the `nimbus_id` field has been added to store references to an external database and is used during synchronization. A `search_vector` field has also been added to store the pre-calculated search vector for full-text search.
+
+
+```python
+def update_search_vector(mapper, connection, target):
+    values = [target.first_name, target.last_name, target.email, target.description]
+    filtered_values = [item for item in values if item]
+    target.search_vector = func.to_tsvector('english', " ".join(filtered_values))
+
+
+event.listen(Contact, 'before_insert', update_search_vector)
+event.listen(Contact, 'before_update', update_search_vector)
+```
+
+The pre-calculation of the search vector is configured using ORM event listener.
+
+
+
 ## 2. Import CSV data into database
 
 The data import script, `api/load.py`, has been crafted and encapsulated within a separate, short-lived Docker Compose service. This script ensures that the table is both created and empty before loading the data. After its execution, it reports the status of the work to the logs and then exits.
