@@ -1,15 +1,19 @@
 import concurrent
 import csv
+import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import requests
 from sqlalchemy import inspect
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 from sqlalchemy.orm.session import Session
-from utils import nimbus
-from utils.database import SessionLocal
-from utils.models import Contact
+
+from api.utils import nimbus
+from api.utils.database import SessionLocal
+from api.utils.models import Contact
+
+logger = logging.getLogger(__name__)
 
 
 def table_exists(table: DeclarativeMeta, session: Session) -> bool:
@@ -69,46 +73,45 @@ def enrich_contact(contact: Contact, session: requests.Session) -> Contact:
 
     if contact.email:
         query = {"email": {"is": contact.email}}
-        print(f"Searching for contact with email: {contact.email}")
+        logger.info(f"Searching for contact with email: {contact.email}")
 
-        response: nimbus.NimbusContactsResponse = api.list_contacts(query=query)
+        response: Optional[nimbus.NimbusContactsResponse] = api.list_contacts(
+            query=query
+        )
 
-        if response and response.meta["total"] > 0:
+        if response and response.meta["total"] > 0:  # type: ignore
             contact.nimbus_id = response.resources[0].id
-            print(
+            logger.info(
                 f"Found contact with email: {contact.email}, nimbus_id: {contact.nimbus_id}"
             )
 
     return contact
 
 
-def import_initial_data() -> None:
-    """Perform initial data import from CSV file to database"""
+async def import_initial_data() -> None:
+    """Perform initial data import from CSV files"""
+
     with SessionLocal() as db_session:
         if not table_exists(Contact.__table__, db_session):
-            print("Tables does not exist, skipping data insertion.")
+            logger.warning("[!] Tables does not exist, skipping data insertion.")
             return
 
         if table_has_records(Contact, db_session):
-            print("Tables already has records, skipping data insertion.")
+            logger.warning(
+                "[!] Tables Contact already has records, skipping data insertion."
+            )
             return
 
-        print("Loading initial data...")
+        logger.info("[+] Loading initial data...")
 
-        contacts_data = load_csv_data("data/contacts.csv")
+        contacts_data = load_csv_data("api/data/contacts.csv")
 
         with requests.Session() as session:
             with ThreadPoolExecutor(max_workers=10) as executor:
                 futures = []
                 for contact_data in contacts_data:
-                    print(f"Loading contact data: {contact_data}")
-                    # contact = Contact(**contact_data)
-
-                    contact = Contact()
-                    contact.first_name = contact_data["first_name"]
-                    contact.last_name = contact_data["last_name"]
-                    contact.email = contact_data["email"]
-                    contact.description = contact_data["description"]
+                    logger.info(f"[+] Loading contact data: {contact_data}")
+                    contact = Contact(**contact_data)
 
                     futures.append(executor.submit(enrich_contact, contact, session))
 
@@ -117,8 +120,6 @@ def import_initial_data() -> None:
                     db_session.add(enriched_contact)
 
         db_session.commit()
-        print("Initial data loaded successfully from CSV files.")
-
-
-if __name__ == "__main__":
-    import_initial_data()
+        logger.info(
+            f"[+] Initial data ({len(futures)}) loaded successfully from CSV files."
+        )

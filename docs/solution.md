@@ -70,30 +70,18 @@ event.listen(Contact, 'before_update', update_search_vector)
 The pre-calculation of the search vector is configured using ORM event listener.
 
 
-
 ## 3. Import CSV data into database
 
-The data import script, `api/load.py`, has been crafted and encapsulated within a separate, short-lived Docker Compose service. This script ensures that the table is both created and empty before loading the data. After its execution, it reports the status of the work to the logs and then exits.
+The data import functionality has been designed to be executed only once during the initial completion of API application.
+It has function that checks if the database is empty and if so, it imports the data from the CSV file.
 
-Docker Compose Service Configuration:
+```python
+@app.on_event("startup")
+async def app_startup() -> None:
+    await check_db_connected()
 
-```yml
-version: '3'
-
-services:
-...
-  imports:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - database
-    env_file:
-      - .env
-    volumes:
-      - ./api:/api
-    command: python3 load.py
-...
+    from api.load import import_initial_data
+    await import_initial_data()
 ```
 
 ## 4. Periodic Updates
@@ -133,7 +121,9 @@ services:
       - .env
     volumes:
       - ./api:/api
-    command: celery -A tasks.celery worker --loglevel=info
+    command: >
+      sh -c 'dockerize -wait tcp://database:5432 -timeout 1m &&
+      celery -A api.tasks.celery worker --loglevel=info'
 ...  
 ```
 
@@ -153,11 +143,22 @@ The `api/v2/search/status/{task_id}` endpoint can be used to retrieve the search
 
 The `api/tests` directory contains unit tests for the API endpoints. The tests can be executed using the following command:
 
+Mount `contact-book-api-api-1` container to your local environment:
+
 ```bash
-docker-compose run --rm api pytest
+docker exec -it contact-book-api-api-1 sh
+```
+
+Run `pytest` command:
+
+```bash
+pytest
 ```
 
 ## 7. Improvements
 
-- Add service that will aggregate logs from all compose services and store them in a centralized location.
-- Add service that will monitor the health of all compose services and send alerts if any of the services is down.
+- [x] Add waiting script to ensure that the database is ready before starting api app and celery.
+- [ ] Refactor loading data from CSV file to be executed in background using celery.
+- [ ] Add service that will aggregate logs from all compose services and store them in a centralized location.
+- [ ] Improve test coverage to 80%
+- [ ] Resolved 2 warnings that appears when running pytest command.

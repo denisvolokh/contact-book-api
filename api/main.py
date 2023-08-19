@@ -41,6 +41,10 @@ app = start_application()
 async def app_startup() -> None:
     await check_db_connected()
 
+    from api.load import import_initial_data
+
+    await import_initial_data()
+
 
 @app.on_event("shutdown")
 async def app_shutdown() -> None:

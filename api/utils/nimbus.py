@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
@@ -6,6 +7,8 @@ from urllib.parse import urlencode
 import requests
 from pydantic import BaseModel
 from requests.adapters import HTTPAdapter, Retry
+
+logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 3
 TIMEOUT_SECONDS = 15
@@ -75,11 +78,9 @@ class NimbusAPIClient:
             "page": page,
         }
 
-        print(f"Query params: {query_params}")
+        (f"Query params: {query_params}")
 
         url = BASE_URL + f"?{self._dict_to_query(query_params)}"
-
-        print(f"URL: {url}")
 
         try:
             response = self.session.get(
@@ -87,10 +88,10 @@ class NimbusAPIClient:
             )
             response.raise_for_status()
         except requests.HTTPError as e:
-            print(f"Request for {url} failed with HTTP error: {e}")
+            logger.warning(f"[!] Request for {url} failed with HTTP error: {e}")
             return None
         except Exception as e:
-            print(f"An error occurred for {url}: {str(e)}")
+            logger.warning(f"[!] An error occurred for {url}: {str(e)}")
             return None
 
         return NimbusContactsResponse(**response.json())
@@ -113,10 +114,10 @@ class NimbusAPIClient:
             )
             response.raise_for_status()
         except requests.HTTPError as e:
-            print(f"Request for {url} failed with HTTP error: {e}")
+            logger.warning(f"[!] Request for {url} failed with HTTP error: {e}")
             return None
         except Exception as e:
-            print(f"An error occurred for {url}: {str(e)}")
+            logger.warning(f"[!] An error occurred for {url}: {str(e)}")
             return None
 
         data = NimbusContactsResponse(**response.json())

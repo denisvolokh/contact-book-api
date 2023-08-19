@@ -1,3 +1,4 @@
+import logging
 from concurrent import futures
 from typing import List, Optional
 
@@ -7,6 +8,8 @@ from celery.schedules import crontab
 
 from api.utils import crud, models, nimbus, search
 from api.utils.database import SessionLocal
+
+logger = logging.getLogger(__name__)
 
 app_name = "contacts-tasks-app"
 broker_url = "redis://redis:6379/0"
@@ -40,7 +43,8 @@ def task_full_text_search(self: Task, text: str) -> Optional[List[models.Contact
 @celery.task
 def task_update_contacts() -> None:
     """Recurring background task to update contacts from external API"""
-    print("Recurring background task executed")
+
+    logger.info("[+] Executing task_update_contacts...")
 
     with requests.Session() as session:
         nimbus_client = nimbus.NimbusAPIClient(session)
@@ -63,8 +67,8 @@ def task_update_contacts() -> None:
                             executor.submit(nimbus_client.list_contacts, query=query)
                         ] = local_contact
                     else:
-                        print(
-                            f"Local contact {local_contact} does not contain either nimbus_id nor email"
+                        logger.info(
+                            f"[+] Local contact {local_contact} does not contain either nimbus_id nor email"
                         )
 
                 for future_contact in futures.as_completed(future_contacts):

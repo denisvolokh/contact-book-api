@@ -13,19 +13,9 @@ services:
       - .env
     volumes:
       - ./api:/code/api
-    command: uvicorn api.main:app --host 0.0.0.0 --port 5000 --reload
-  
-  imports:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - database
-    env_file:
-      - .env
-    volumes:
-      - ./api:/code/api
-    command: python3 /code/api/load.py
+    command: >
+      sh -c 'dockerize -wait tcp://database:5432 -timeout 1m &&
+      uvicorn api.main:app --host 0.0.0.0 --port 5000 --reload'
 
   tasks:
     build:
@@ -38,7 +28,9 @@ services:
       - .env
     volumes:
       - ./api:/code/api
-    command: celery -A api.tasks.celery worker --loglevel=info
+    command: >
+      sh -c 'dockerize -wait tcp://database:5432 -timeout 1m &&
+      celery -A api.tasks.celery worker --loglevel=info'
 
   mkdocs:
     build:
