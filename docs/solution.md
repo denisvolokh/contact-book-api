@@ -17,9 +17,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: dbname
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./pg_data:/var/lib/postgresql/data/
       - ./pg_backups:/pg_backups
@@ -88,8 +88,6 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
-    environment:
-      DATABASE_URL: postgresql://user:password@database:5432/dbname
     env_file:
       - .env
     volumes:
@@ -131,8 +129,6 @@ services:
     depends_on:
       - database
       - redis
-    environment:
-      DATABASE_URL: postgresql://user:password@database:5432/dbname
     env_file:
       - .env
     volumes:
@@ -160,3 +156,8 @@ The `api/tests` directory contains unit tests for the API endpoints. The tests c
 ```bash
 docker-compose run --rm api pytest
 ```
+
+## 7. Improvements
+
+- Add service that will aggregate logs from all compose services and store them in a centralized location.
+- Add service that will monitor the health of all compose services and send alerts if any of the services is down.

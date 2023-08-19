@@ -9,8 +9,8 @@ services:
       - "5000:5000"
     depends_on:
       - database
-    environment:
-      DATABASE_URL: postgresql://user:password@database:5432/dbname
+    env_file:
+      - .env
     volumes:
       - ./api:/code/api
     command: uvicorn api.main:app --host 0.0.0.0 --port 5000 --reload
@@ -21,14 +21,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
-    environment:
-      DATABASE_URL: postgresql://user:password@database:5432/dbname
     env_file:
       - .env
     volumes:
       - ./api:/code/api
     command: python3 /code/api/load.py
-    # command: top
 
   tasks:
     build:
@@ -37,34 +34,32 @@ services:
     depends_on:
       - database
       - redis
-    environment:
-      DATABASE_URL: postgresql://user:password@database:5432/dbname
     env_file:
       - .env
     volumes:
       - ./api:/code/api
     command: celery -A api.tasks.celery worker --loglevel=info
 
-  # mkdocs:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   working_dir: /
-  #   volumes:
-  #     - ./docs:/docs
-  #     - ./mkdocs.yml:/mkdocs.yml
-  #   command: mkdocs serve --dev-addr=0.0.0.0:8000 --livereload
+  mkdocs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    working_dir: /
+    volumes:
+      - ./docs:/docs
+      - ./mkdocs.yml:/mkdocs.yml
+    command: mkdocs serve --dev-addr=0.0.0.0:8000 --livereload
 
   database:
     image: postgres:latest
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: dbname
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./pg_data:/var/lib/postgresql/data/
       - ./pg_backups:/pg_backups
